@@ -7,10 +7,10 @@ from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
 translator = Translator()
 
-model_name = 'tuner007/pegasus_paraphrase'
-torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
-tokenizer = PegasusTokenizer.from_pretrained(model_name)
-model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
+# model_name = 'tuner007/pegasus_paraphrase'
+# torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
+# tokenizer = PegasusTokenizer.from_pretrained(model_name)
+# model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
 
 def get_response(input_text,num_return_sequences,num_beams):
 	batch = tokenizer([input_text],truncation=True,padding='longest',max_length=60, return_tensors="pt").to(torch_device)
@@ -72,10 +72,10 @@ def main():
 		out = translator.translate(txt,dest="hi")
 		st.subheader("Hindi Text : "+out.text)
 
-	if st.checkbox("Paraphrase Given Sentence"):
-		txt2 = st.text_area("Enter here to Paraphrase","Type Here")
-		out2 = translator.translate(txt2,dest="hi")
-		st.json(out2)
+# 	if st.checkbox("Paraphrase Given Sentence"):
+# 		txt2 = st.text_area("Enter here to Paraphrase","Type Here")
+# 		out2 = translator.translate(txt2,dest="hi")
+# 		st.json(out2)
 
 
 	st.sidebar.subheader("About This App")
