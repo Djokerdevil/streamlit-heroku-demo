@@ -19,7 +19,7 @@ def get_response(input_text,num_return_sequences,num_beams):
 	return tgt_text
 
 def get_qa_pair(file):
-	df = pd.read_csv(file,sep="\t")
+	df = pd.read_csv(file,sep="\t",lineterminator='\n')
 	a = df.sample(1)
 	return {
 	"text" : a["text"][0],
