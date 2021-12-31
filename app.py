@@ -2,8 +2,8 @@ from datasets import load_dataset
 import streamlit as st
 import pandas as pd 
 from googletrans import Translator 
-import torch
-from transformers import PegasusForConditionalGeneration, PegasusTokenizer
+# import torch
+# from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
 translator = Translator()
 
