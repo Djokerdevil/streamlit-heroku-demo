@@ -1,3 +1,5 @@
+%%writefile app.py
+
 from datasets import load_dataset
 import streamlit as st
 import pandas as pd 
@@ -20,11 +22,11 @@ def get_response(input_text,num_return_sequences,num_beams):
 
 def get_qa_pair(file):
 	df = pd.read_csv(file,sep="\t",lineterminator='\n')
-	a = df.sample(1)
+	a = df.sample().reset_index()
 	return {
 	"text" : a["text"][0],
 	"question" : a["question"][0],
-	"answer" : a["answer"][0]
+	"answer" : a["answer\r"][0]
 	}
 
 
@@ -38,7 +40,13 @@ def main():
 	# authentication logic + get which class student belongs to : high, mid, low 
 	stud_class = "high" 
 
-	if st.checkbox("Get New Passage"):
+	option = st.selectbox(
+     'What would you like to do?',
+     ('Reading Comprehension', 'Translate to Hindi', 'Translate to English'))
+
+	st.write('You selected:', option)
+ 
+	if option == "Reading Comprehension":
 		cqa = get_qa_pair(stud_class+".tsv") # high.tsv is saved
 
 
@@ -67,11 +75,15 @@ def main():
 				st.subheader("Actual Answer : ")
 				st.text(cqa['answer'])
 
-	if st.checkbox("Translate to Hindi"):
+	elif option == 'Translate to Hindi':
 		txt = st.text_area("Enter here to Translate","Type Here")
 		out = translator.translate(txt,dest="hi")
 		st.subheader("Hindi Text : "+out.text)
-
+	else: 
+		txt2 = st.text_area("Enter here to Translate","Type Here")
+		out2 = translator.translate(txt2,dest="en")
+		st.subheader("Hindi Text : "+out2.text)
+	
 # 	if st.checkbox("Paraphrase Given Sentence"):
 # 		txt2 = st.text_area("Enter here to Paraphrase","Type Here")
 # 		out2 = translator.translate(txt2,dest="hi")
