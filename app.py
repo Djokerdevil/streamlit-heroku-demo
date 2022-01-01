@@ -1,10 +1,17 @@
+%%writefile app.py
+
 from datasets import load_dataset
 import streamlit as st
 import pandas as pd 
 from googletrans import Translator 
+import session_state
+import time 
+
 # import torch
 # from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
+state = session_state.get(question_number=0)
+score = session_state.get(score=0)
 translator = Translator()
 
 # model_name = 'tuner007/pegasus_paraphrase'
@@ -12,13 +19,14 @@ translator = Translator()
 # tokenizer = PegasusTokenizer.from_pretrained(model_name)
 # model = PegasusForConditionalGeneration.from_pretrained(model_name).to(torch_device)
 
-def get_response(input_text,num_return_sequences,num_beams):
-	batch = tokenizer([input_text],truncation=True,padding='longest',max_length=60, return_tensors="pt").to(torch_device)
-	translated = model.generate(**batch,max_length=60,num_beams=num_beams, num_return_sequences=num_return_sequences, temperature=1.5)
-	tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
-	return tgt_text
+# def get_response(input_text,num_return_sequences,num_beams):
+# 	batch = tokenizer([input_text],truncation=True,padding='longest',max_length=60, return_tensors="pt").to(torch_device)
+# 	translated = model.generate(**batch,max_length=60,num_beams=num_beams, num_return_sequences=num_return_sequences, temperature=1.5)
+# 	tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
+# 	return tgt_text
 
-def get_qa_pair(file):
+@st.cache
+def get_qa_pair(file,rand):
 	df = pd.read_csv(file,sep="\t",lineterminator='\n')
 	a = df.sample().reset_index()
 	return {
@@ -45,7 +53,8 @@ def main():
 	st.write('You selected:', option)
  
 	if option == "Reading Comprehension":
-		cqa = get_qa_pair(stud_class+".tsv") # high.tsv is saved
+		st.text("Question Number : " +str(state.question_number))
+		cqa = get_qa_pair(stud_class+".tsv",state.question_number) # high.tsv is saved
 
 
 		st.subheader("Context : ")
@@ -55,23 +64,27 @@ def main():
 		st.markdown(cqa['question'])	
 
 		message1 = st.text_area("Enter your answer","Type Here")
+		a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
 
-		if st.button("Check"):
-
+		if a != "Please select an answer":
 			st.subheader("Your Answer : ")
 			st.text(message1)
 			score = 0
 			if message1.lower() in cqa["answer"].lower():
 				score = 1
-			st.text("Score : ")
+			st.text("Score : "+str(score))
 			if score:
 				st.text("Correct!")
 				st.subheader("Full Answer : ")
-				t.text(cqa['answer'])
+				st.text(cqa['answer'])
 			else: 
 				st.text("Incorrect!")
 				st.subheader("Actual Answer : ")
 				st.text(cqa['answer'])
+		
+		
+		if st.button("Get New Question"):
+			state.question_number+=1
 
 	elif option == 'Translate to Hindi':
 		txt = st.text_area("Enter here to Translate","Type Here")
@@ -90,9 +103,9 @@ def main():
 
 	st.sidebar.subheader("About This App")
 	st.sidebar.write("#Integrating AI and differentiated Data across student buckets, this is an attempt at using AI tools to enable English Language acquisition amongst a focussed group of 93 kids of a TFI classroom. ")
-	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School;Mumbai.")
+	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School; Mumbai.")
 	st.sidebar.subheader("Created with ♥")
-	st.sidebar.text("By Debamita Samajdar, Abhilash Paul, and Honey Joshi.")
+	st.sidebar.text("By Debamita Samajdar, Abhilash Paul, & Honey Joshi.")
 
 
 
