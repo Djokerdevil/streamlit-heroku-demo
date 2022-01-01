@@ -91,7 +91,7 @@ def main():
 	st.sidebar.subheader("About This App")
 	st.sidebar.write("#Integrating AI and differentiated Data across student buckets, this is an attempt at using AI tools to enable English Language acquisition amongst a focussed group of 93 kids of a TFI classroom. ")
 	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School;Mumbai.")
-	st.sidebar.subheader("Created with ♥ )
+	st.sidebar.subheader("Created with ♥")
 	st.sidebar.text("By Debamita Samajdar, Abhilash Paul, and Honey Joshi.")
 
 
