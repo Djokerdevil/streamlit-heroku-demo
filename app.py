@@ -4,6 +4,7 @@ import pandas as pd
 from googletrans import Translator 
 import session_state
 import time 
+from fuzzywuzzy import fuzz,process
 
 # import torch
 # from transformers import PegasusForConditionalGeneration, PegasusTokenizer
@@ -61,15 +62,15 @@ def main():
 		st.subheader("Question : ")
 		st.markdown(cqa['question'])	
 
-		message1 = st.text_area("Enter your answer","Type Here")
+		message1 = st.text_area("Enter your answer","")
 		a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
 
 		if a != "Please select an answer":
 			st.subheader("Your Answer : ")
 			st.text(message1)
 			score = 0
-			if message1.lower() in cqa["answer"].lower():
-				score = 1
+			if fuzz.ratio(message1.lower(),cqa["answer"].lower()) > 75:
+				score = fuzz.ratio(message1.lower(),cqa["answer"].lower()) 
 			st.text("Score : "+str(score))
 			if score:
 				st.text("Correct!")
@@ -101,9 +102,9 @@ def main():
 
 	st.sidebar.subheader("About This App")
 	st.sidebar.write("#Integrating AI and differentiated Data across student buckets, this is an attempt at using AI tools to enable English Language acquisition amongst a focussed group of 93 kids of a TFI classroom. ")
-	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School; Mumbai.")
-	st.sidebar.subheader("Created with ♥")
-	st.sidebar.text("By Debamita Samajdar, Abhilash Paul, & Honey Joshi.")
+	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School, Mumbai.")
+	st.sidebar.subheader("Created with ♥ by: ")
+	st.sidebar.text("Debamita Samajdar, Abhilash Paul, and Honey Joshi.")
 
 
 
