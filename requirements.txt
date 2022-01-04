@@ -5,3 +5,4 @@ datasets
 nltk  
 googletrans==3.1.0a0 
 sentencepiece
+fuzzywuzzy
