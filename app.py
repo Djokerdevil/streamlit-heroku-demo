@@ -10,7 +10,7 @@ from fuzzywuzzy import fuzz,process
 # from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
 state = session_state.get(question_number=0)
-score = session_state.get(score=0)
+
 translator = Translator()
 
 # model_name = 'tuner007/pegasus_paraphrase'
@@ -34,9 +34,20 @@ def get_qa_pair(file,rand):
 	"answer" : a["answer\r"][0]
 	}
 
-
+@st.cache
+def getmcq(rand):
+  df = pd.read_csv("mcq.tsv",sep="\t",lineterminator='\n')
+  a = df.sample()
+  ind = df.keys()
+  return {
+  "question" : a[ind[0]][0],
+  "real_ans" : a[ind[1]][0],
+  "conf_ans" : a[ind[2]][0]
+  }
 
 def main():
+	scoreM = 0
+	score = 0
 	"""Adaptive Education"""
 	st.title("Reading Comprehension with AI capabilities")
 
@@ -47,12 +58,13 @@ def main():
 
 	option = st.selectbox(
      'What would you like to do?',
-     ('Reading Comprehension', 'Translate to Hindi', 'Translate to English'))
+     ('Reading Comprehension', 'Translate to Hindi', 'Translate to English',"MCQs"))
 
 	st.write('You selected:', option)
  
 	if option == "Reading Comprehension":
 		st.text("Question Number : " +str(state.question_number))
+		st.text("Your Score : " +str(scoreM))
 		cqa = get_qa_pair(stud_class+".tsv",state.question_number) # high.tsv is saved
 
 
@@ -62,10 +74,11 @@ def main():
 		st.subheader("Question : ")
 		st.markdown(cqa['question'])	
 
-		message1 = st.text_area("Enter your answer","")
-		a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
+		message1 = st.text_area("Enter your answer","Type Here")
+		# a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
+		a = st.radio("Confirm : ", ["Answering","Confirm!"])
 
-		if a != "Please select an answer":
+		if a != "Answering":
 			st.subheader("Your Answer : ")
 			st.text(message1)
 			score = 0
@@ -84,16 +97,34 @@ def main():
 		
 		if st.button("Get New Question"):
 			state.question_number+=1
+			scoreM +=score
 
 	elif option == 'Translate to Hindi':
 		txt = st.text_area("Enter here to Translate","Type Here")
 		out = translator.translate(txt,dest="hi")
 		st.subheader("Hindi Text : "+out.text)
-	else: 
+	elif option == "Translate to English": 
 		txt2 = st.text_area("Enter here to Translate","Type Here")
 		out2 = translator.translate(txt2,dest="en")
 		st.subheader("Hindi Text : "+out2.text)
-	
+	else:
+		q = getmcq(state.question_number)
+		st.text("Question : "+q["question"])
+		real_ans = q["real_ans"]
+		conf_ans = q["conf_ans"].split(",")
+		conf_ans.append(real_ans)
+		x = st.radio("Select your Answer : ",conf_ans)
+		
+
+		if st.button("Check"):
+			if x == real_ans:
+				st.text("Correct!")
+			else:
+				st.text("Incorrect!")
+
+			if st.button("Next Question"):
+				state.question_number+=1
+			
 # 	if st.checkbox("Paraphrase Given Sentence"):
 # 		txt2 = st.text_area("Enter here to Paraphrase","Type Here")
 # 		out2 = translator.translate(txt2,dest="hi")
@@ -102,9 +133,9 @@ def main():
 
 	st.sidebar.subheader("About This App")
 	st.sidebar.write("#Integrating AI and differentiated Data across student buckets, this is an attempt at using AI tools to enable English Language acquisition amongst a focussed group of 93 kids of a TFI classroom. ")
-	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School, Mumbai.")
-	st.sidebar.subheader("Created with ♥ by: ")
-	st.sidebar.text("Debamita Samajdar, Abhilash Paul, and Honey Joshi.")
+	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School;Mumbai.")
+	st.sidebar.subheader("Created with ♥ by ")
+	st.sidebar.text("Brought to you by Debamita Samajdar, Abhilash Paul, and Honey Joshi.")
 
 
 
