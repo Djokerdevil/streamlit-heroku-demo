@@ -35,7 +35,7 @@ def get_qa_pair(file,rand):
 
 @st.cache
 def getmcq(rand):
-  df = pd.read_csv("syn.mcq.tsv",sep="\t",lineterminator='\n')
+  df = pd.read_csv("mcq.tsv",sep="\t",lineterminator='\n')
   a = df.sample()
   ind = df.keys()
   return {
@@ -157,7 +157,7 @@ def main():
 	st.sidebar.write("#Integrating AI and differentiated Data across student buckets, this is an attempt at using AI tools to enable English Language acquisition amongst a focussed group of 93 kids of a TFI classroom. ")
 	st.sidebar.info("The app is meant for the use of students and TFI Fellows of Grade 8, Holy Mother English School;Mumbai.")
 	st.sidebar.subheader("Created with ♥ ")
-	st.sidebar.text("By Debamita S., Abhilash P., and Honey J.")
+	st.sidebar.text("By Debamita S., Abhilash P., & Honey J.")
 
 
 
