@@ -35,7 +35,7 @@ def get_qa_pair(file,rand):
 
 @st.cache
 def getmcq(rand):
-  df = pd.read_csv("syn.high.tsv",sep="\t",lineterminator='\n')
+  df = pd.read_csv("syn.high.mcq.tsv",sep="\t",lineterminator='\n')
   a = df.sample()
   ind = df.keys()
   return {
