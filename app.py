@@ -35,14 +35,14 @@ def get_qa_pair(file,rand):
 
 @st.cache
 def getmcq(rand):
-  df = pd.read_csv("mcq.tsv",sep="\t",lineterminator='\n')
-  a = df.sample()
-  ind = df.keys()
-  return {
-  "question" : a[ind[0]][0],
-  "real_ans" : a[ind[1]][0],
-  "conf_ans" : a[ind[2]][0]
-  }
+	df = pd.read_csv("mcq.tsv",sep="\t",lineterminator='\n')
+	a = df.sample(1).reset_index()
+	ind = df.keys()
+	return {
+	"question" : a[ind[0]][0],
+	"real_ans" : a[ind[1]][0],
+	"conf_ans" : a[ind[2]][0]
+	}
 
 def main():
 	scoreM = 0
@@ -57,7 +57,7 @@ def main():
 
 	option = st.selectbox(
      'What would you like to do?',
-     ('Reading Comprehension', 'Translate to Hindi', 'Translate to English',"MCQs"))
+     ('Reading Comprehension', 'Translate to Hindi', 'Translate to English',"Synonyms"))
 
 	st.write('You selected:', option)
  
@@ -75,7 +75,7 @@ def main():
 		st.subheader("Question : ")
 		st.markdown(cqa['question'])	
 
-		message1 = st.text_area("Enter your answer")
+		message1 = st.text_area("Enter your answer","Type Here")
 		# a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
 		# a = st.radio("Confirm : ", ["Answering","Confirm!"])
 		
@@ -131,21 +131,22 @@ def main():
 		st.subheader("Hindi Text : "+out2.text)
 	else:
 		q = getmcq(state.question_number)
-		st.text("Question : "+q["question"])
+		st.text("Question : What is the synonym of "+q["question"]+"?")
 		real_ans = q["real_ans"]
 		conf_ans = q["conf_ans"].split(",")
 		conf_ans.append(real_ans)
 		x = st.radio("Select your Answer : ",conf_ans)
 		
-
+		
 		if st.button("Check"):
 			if x == real_ans:
 				st.text("Correct!")
 			else:
 				st.text("Incorrect!")
+				st.text("Correct Answer: "+real_ans)
 
-			if st.button("Next Question"):
-				state.question_number+=1
+		if st.button("Next Question"):
+			state.question_number+=1
 			
 # 	if st.checkbox("Paraphrase Given Sentence"):
 # 		txt2 = st.text_area("Enter here to Paraphrase","Type Here")
@@ -155,7 +156,7 @@ def main():
 
 	st.sidebar.subheader("About This App")
 	st.sidebar.write("#Integrating AI and differentiated Data across student buckets, this is an attempt at using AI tools to enable English Language acquisition amongst a focussed group of 93 kids of a TFI classroom. ")
-	st.sidebar.info("The app is meant for the use of students and TFI Fellows of Grade 8, Holy Mother English School;Mumbai.")
+	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School;Mumbai.")
 	st.sidebar.subheader("Created with ♥ ")
 	st.sidebar.text("By Debamita S., Abhilash P., & Honey J.")
 
