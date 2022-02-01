@@ -132,7 +132,6 @@ def main():
 
 		scoreM = 0
 		score = 0
-		"""Adaptive Education"""
 
 		#normal RC
 
@@ -141,11 +140,11 @@ def main():
 
 		if is_admin:
 			option = st.radio(
-		 'What would you like to do?',
+		 'Choose anything you want to practise!',
 		 ('Reading Comprehension', 'Translate to Hindi', 'Translate to English',"Synonyms", "View User Details"))		
 		else :
 			option = st.radio(
-		 'What would you like to do?',
+		 'Choose anything you want to practise!',
 		 ('Reading Comprehension', 'Translate to Hindi', 'Translate to English',"Synonyms"))
 
 
@@ -221,7 +220,7 @@ def main():
 			st.subheader("Hindi Text : "+out2.text)
 		else:
 			q = getmcq(state.question_number)
-			st.text("Question : What is the synonym of "+q["question"]+"?")
+			st.text("Question : Choose the same meaning word "+q["question"]+"?")
 			real_ans = q["real_ans"]
 			conf_ans = q["conf_ans"].split(",")
 			conf_ans.append(real_ans)
