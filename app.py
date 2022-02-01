@@ -4,6 +4,11 @@ from googletrans import Translator
 import session_state
 import time 
 from fuzzywuzzy import fuzz,process
+# Security
+#passlib,hashlib,bcrypt,scrypt
+import hashlib
+# DB Management
+import sqlite3
 
 # import torch
 # from transformers import PegasusForConditionalGeneration, PegasusTokenizer
@@ -44,121 +49,206 @@ def getmcq(rand):
 	"conf_ans" : a[ind[2]][0]
 	}
 
-def main():
-	scoreM = 0
-	score = 0
-	"""Adaptive Education"""
-	st.title("Reading Comprehension with AI capabilities")
 
-	#normal RC
-
-	# authentication logic + get which class student belongs to : high, mid, low 
-	stud_class = "high" 
-
-	option = st.selectbox(
-     'What would you like to do?',
-     ('Reading Comprehension', 'Translate to Hindi', 'Translate to English',"Synonyms"))
-
-	st.write('You selected:', option)
- 
-	if option == "Reading Comprehension":
-		
-	
-		st.text("Question Number : " +str(state.question_number))
-		st.text("Your Score : " +str(scoreM))
-		cqa = get_qa_pair(stud_class+".tsv",state.question_number) # high.tsv is saved
+def make_hashes(password):
+	return hashlib.sha256(str.encode(password)).hexdigest()
 
 
-		st.subheader("Context : ")
-		st.markdown(cqa['text'])
+def check_hashes(password, hashed_text):
+	if make_hashes(password) == hashed_text:
+		return hashed_text
+	return False
 
-		st.subheader("Question : ")
-		st.markdown(cqa['question'])	
+conn = sqlite3.connect('data.db')
+c = conn.cursor()
 
-		message1 = st.text_area("Enter your answer","Type Here")
-		# a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
-		# a = st.radio("Confirm : ", ["Answering","Confirm!"])
-		
-		# if a != "Answering":
-		if st.button("Check"):
-			st.subheader("Your Answer :")
-			st.text(message1)
-			score = 0
-			if fuzz.ratio(message1.lower(),cqa["answer"].lower()) > 75:
-				score = fuzz.ratio(message1.lower(),cqa["answer"].lower()) 
-			st.text("Score : "+str(score))
-			# if score:
-			# 	st.text("Correct!")
-			# 	st.subheader("Full Answer : ")
-			# 	st.text(cqa['answer'])
-			# else: 
-			# 	st.text("Incorrect!")
-			# 	st.subheader("Actual Answer : ")
-			# 	st.text(cqa['answer'])
-		
-			#writing to score.tsv
-			fp = open("score.tsv","a")
-			fp.write(cqa["text"].strip()+"\t"+cqa["question"].strip()+"\t"+cqa["answer"].strip()+"\t"+message1.strip()+"\t"+str(score)+"\n")
-			fp.close()
-			 	
-			
-		
-		if st.button("Show Answers"):
-				try:
-					df = pd.read_csv("score.tsv",sep="\t")
-					json = df.to_json(orient="records")
-					# json2 = {}
-					# for i in range(len(json["Text"])):
-					# 	json2[i] = {}
-					
-					# for i in range(len(json["Text"])):
-					# 	json2[i][]
-					
-					st.json(json)
-				except: 
-					st.text("No Questions Answered Yet!")
-		if st.button("Get New Question"):
-			state.question_number+=1
-			scoreM +=score
 
-	elif option == 'Translate to Hindi':
-		txt = st.text_area("Enter here to Translate","Type Here")
-		out = translator.translate(txt,dest="hi")
-		st.subheader("Hindi Text : "+out.text)
-	elif option == "Translate to English": 
-		txt2 = st.text_area("Enter here to Translate","Type Here")
-		out2 = translator.translate(txt2,dest="en")
-		st.subheader("Hindi Text : "+out2.text)
-	else:
-		q = getmcq(state.question_number)
-		st.text("Question : What is the synonym of "+q["question"]+"?")
-		real_ans = q["real_ans"]
-		conf_ans = q["conf_ans"].split(",")
-		conf_ans.append(real_ans)
-		x = st.radio("Select your Answer : ",conf_ans)
-		
-		
-		if st.button("Check"):
-			if x == real_ans:
-				st.text("Correct!")
+# DB  Functions
+def create_usertable():
+	c.execute('CREATE TABLE IF NOT EXISTS userstable(username TEXT,password TEXT)')
+
+
+def add_userdata(username, password):
+	c.execute('INSERT INTO userstable(username,password) VALUES (?,?)', (username, password))
+	conn.commit()
+
+
+def login_user(username, password):
+	c.execute('SELECT * FROM userstable WHERE username =? AND password = ?', (username, password))
+	data = c.fetchall()
+	return data
+
+
+def is_admin_user(username, password):
+	if username == 'admin' and password == 'cinnamonsabir':
+		return True
+	else :
+		return False
+
+
+def view_all_users():
+	c.execute('SELECT * FROM userstable')
+	data = c.fetchall()
+	return data
+
+
+def drive_basic_login():
+	menu = ["Login", "SignUp"]
+	choice = st.sidebar.selectbox("Menu", menu)
+
+	if choice == "Login":
+		username = st.sidebar.text_input("User Name")
+		password = st.sidebar.text_input("Password", type='password')
+		if st.sidebar.checkbox("Login"):
+			create_usertable()
+			hashed_pswd = make_hashes(password)
+
+			result = login_user(username, check_hashes(password, hashed_pswd))
+			admin = is_admin_user(username, password)
+			if result:
+				st.success("Logged In as {}".format(username))
 			else:
-				st.text("Incorrect!")
-				st.text("Correct Answer: "+real_ans)
+				st.warning("Incorrect Username/Password")
+			return result, admin
 
-		if st.button("Next Question"):
-			state.question_number+=1
+	elif choice == "SignUp":
+		st.subheader("Create New Account")
+		new_user = st.text_input("Username")
+		new_password = st.text_input("Password", type='password')
+
+		if st.button("Signup"):
+			create_usertable()
+			add_userdata(new_user, make_hashes(new_password))
+			st.success("You have successfully created a valid Account")
+			st.info("Go to Login Menu to login")
+	return False,False
+
+
+def main():
+
+	result, is_admin = drive_basic_login()
+
+	if result:
+
+		scoreM = 0
+		score = 0
+		"""Adaptive Education"""
+
+		#normal RC
+
+		# authentication logic + get which class student belongs to : high, mid, low 
+		stud_class = "high" 
+
+		if is_admin:
+			option = st.radio(
+		 'What would you like to do?',
+		 ('Reading Comprehension', 'Translate to Hindi', 'Translate to English',"Synonyms", "View User Details"))		
+		else :
+			option = st.radio(
+		 'What would you like to do?',
+		 ('Reading Comprehension', 'Translate to Hindi', 'Translate to English',"Synonyms"))
+
+
+		st.write('You selected:', option)
+	 
+		if option == "Reading Comprehension":
 			
-# 	if st.checkbox("Paraphrase Given Sentence"):
-# 		txt2 = st.text_area("Enter here to Paraphrase","Type Here")
-# 		out2 = translator.translate(txt2,dest="hi")
-# 		st.json(out2)
+			st.title("Reading Comprehension with AI capabilities")
+			st.text("Question Number : " +str(state.question_number))
+			st.text("Your Score : " +str(scoreM))
+			cqa = get_qa_pair(stud_class+".tsv",state.question_number) # high.tsv is saved
+
+
+			st.subheader("Context : ")
+			st.markdown(cqa['text'])
+
+			st.subheader("Question : ")
+			st.markdown(cqa['question'])	
+
+			message1 = st.text_area("Enter your answer","Type Here")
+			# a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
+			# a = st.radio("Confirm : ", ["Answering","Confirm!"])
+			
+			# if a != "Answering":
+			if st.button("Check"):
+				st.subheader("Your Answer :")
+				st.text(message1)
+				score = 0
+				if fuzz.ratio(message1.lower(),cqa["answer"].lower()) > 75:
+					score = fuzz.ratio(message1.lower(),cqa["answer"].lower()) 
+				st.text("Score : "+str(score))
+				# if score:
+				# 	st.text("Correct!")
+				# 	st.subheader("Full Answer : ")
+				# 	st.text(cqa['answer'])
+				# else: 
+				# 	st.text("Incorrect!")
+				# 	st.subheader("Actual Answer : ")
+				# 	st.text(cqa['answer'])
+			
+				#writing to score.tsv
+				fp = open("score.tsv","a")
+				fp.write(cqa["text"].strip()+"\t"+cqa["question"].strip()+"\t"+cqa["answer"].strip()+"\t"+message1.strip()+"\t"+str(score)+"\n")
+				fp.close()
+				 	
+				
+			
+			if st.button("Show Answers"):
+					try:
+						df = pd.read_csv("score.tsv",sep="\t")
+						json = df.to_json(orient="records")
+						# json2 = {}
+						# for i in range(len(json["Text"])):
+						# 	json2[i] = {}
+						
+						# for i in range(len(json["Text"])):
+						# 	json2[i][]
+						
+						st.json(json)
+					except: 
+						st.text("No Questions Answered Yet!")
+			if st.button("Get New Question"):
+				state.question_number+=1
+				scoreM +=score
+
+		elif option == 'Translate to Hindi':
+			txt = st.text_area("Enter here to Translate","Type Here")
+			out = translator.translate(txt,dest="hi")
+			st.subheader("Hindi Text : "+out.text)
+		elif option == "Translate to English": 
+			txt2 = st.text_area("Enter here to Translate","Type Here")
+			out2 = translator.translate(txt2,dest="en")
+			st.subheader("Hindi Text : "+out2.text)
+		else:
+			q = getmcq(state.question_number)
+			st.text("Question : What is the synonym of "+q["question"]+"?")
+			real_ans = q["real_ans"]
+			conf_ans = q["conf_ans"].split(",")
+			conf_ans.append(real_ans)
+			x = st.radio("Select your Answer : ",conf_ans)
+			
+			
+			if st.button("Check"):
+				if x == real_ans:
+					st.text("Correct!")
+				else:
+					st.text("Incorrect!")
+					st.text("Correct Answer: "+real_ans)
+
+			if st.button("Next Question"):
+				state.question_number+=1
+				
+	# 	if st.checkbox("Paraphrase Given Sentence"):
+	# 		txt2 = st.text_area("Enter here to Paraphrase","Type Here")
+	# 		out2 = translator.translate(txt2,dest="hi")
+	# 		st.json(out2)
 
 
 	st.sidebar.subheader("About This App")
-	st.sidebar.write("#Integrating AI and differentiated Data across student buckets, this is an attempt at using AI tools to enable English Language acquisition amongst a focussed group of 93 kids of a TFI classroom. ")
+	st.sidebar.write("#Integrating AI and differentiated Data across student buckets, this is an attempt at using AI tools to enable English Language acquisition amongst a focussed group of 94 kids of a TFI classroom. ")
 	st.sidebar.info("The app is meant for the use of students and Teach For India Fellows of Grade 8, Holy Mother English School;Mumbai.")
 	st.sidebar.subheader("Created with ♥ ")
-	st.sidebar.text("By Debamita S., Abhilash P., & Honey J.")
+	st.sidebar.text("By Debamita, Abhilash, Honey, & Nishant")
 
 
 
