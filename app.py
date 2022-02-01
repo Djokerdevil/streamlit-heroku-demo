@@ -152,7 +152,7 @@ def main():
 	 
 		if option == "Reading Comprehension":
 			
-			st.title("Reading Comprehension with AI capabilities")
+			st.title("Reading Comprehension")
 			st.text("Question Number : " +str(state.question_number))
 			st.text("Your Score : " +str(scoreM))
 			cqa = get_qa_pair(stud_class+".tsv",state.question_number) # high.tsv is saved
@@ -164,7 +164,7 @@ def main():
 			st.subheader("Question : ")
 			st.markdown(cqa['question'])	
 
-			message1 = st.text_area("Enter your answer","Type Here")
+			message1 = st.text_area("Enter your answer")
 			# a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
 			# a = st.radio("Confirm : ", ["Answering","Confirm!"])
 			
@@ -220,11 +220,11 @@ def main():
 			st.subheader("Hindi Text : "+out2.text)
 		else:
 			q = getmcq(state.question_number)
-			st.text("Question : Choose the same meaning word "+q["question"]+"?")
+			st.text("What is the same meaning word for "+q["question"]+"?")
 			real_ans = q["real_ans"]
 			conf_ans = q["conf_ans"].split(",")
 			conf_ans.append(real_ans)
-			x = st.radio("Select your Answer : ",conf_ans)
+			x = st.radio("Options : ",conf_ans)
 			
 			
 			if st.button("Check"):
