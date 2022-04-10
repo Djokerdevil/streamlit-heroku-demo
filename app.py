@@ -215,9 +215,9 @@ def main():
 			st.text("Your Score : " + str(comprehension_score))
 
 			if comprehension_score <= 5.0:
-				cqa = get_qa_pair_low("low.tsv", state.question_number)
+				cqa = get_qa_pair_low("high.tsv", state.question_number)
 			elif comprehension_score > 5.0 and comprehension_score <= 15.0 :
-				cqa = get_qa_pair_mid("mid.tsv", state.question_number)
+				cqa = get_qa_pair_mid("high.tsv", state.question_number)
 			else :
 				cqa = get_qa_pair_high("high.tsv", state.question_number)
 
