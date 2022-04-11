@@ -30,7 +30,7 @@ translator = Translator()
 # 	tgt_text = tokenizer.batch_decode(translated, skip_special_tokens=True)
 # 	return tgt_text
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def get_qa_pair_low(file, rand):
 	df = pd.read_csv(file, sep="\t", lineterminator='\n')
 	a = df.sample(1).reset_index()
@@ -41,7 +41,7 @@ def get_qa_pair_low(file, rand):
 		"answer": a["answer\r"][0]
 	}
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def get_qa_pair_mid(file, rand):
 	df = pd.read_csv(file,sep="\t", lineterminator='\n')
 	a = df.sample(1).reset_index()
@@ -51,7 +51,7 @@ def get_qa_pair_mid(file, rand):
 		"answer": a["answer\r"][0]
 	}
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def get_qa_pair_high(file, rand):
 	df = pd.read_csv(file,sep="\t", lineterminator='\n')
 	a = df.sample(1).reset_index()
@@ -61,7 +61,7 @@ def get_qa_pair_high(file, rand):
 		"answer": a["answer\r"][0]
 	}
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def getmcq(rand):
 	df = pd.read_csv("mcq.tsv",sep="\t", lineterminator='\n')
 	a = df.sample(1).reset_index()
